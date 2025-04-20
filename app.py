@@ -71,15 +71,35 @@ async def get_recommendations(
         recommendations = await recommender.get_recommendations(
             user_profile,
             feed_urls,
-            current_user['interests']
+            current_user['interests'],
+            current_user['nationality']
         )
+        
+        # Flatten the recommendations to match frontend expectations
+        combined_recommendations = []
+        
+        # Add country recommendations
+        combined_recommendations.extend(recommendations["country_recommendations"])
+        
+        # Add interest recommendations (flattening the 2D array)
+        for interest_group in recommendations["interest_recommendations"]:
+            combined_recommendations.extend(interest_group)
+        
+        # Add debugging to see what we're sending
+        print(f"[DEBUG] Sending {len(combined_recommendations)} total recommendations")
+        if combined_recommendations:
+            print(f"[DEBUG] Sample recommendation structure: {combined_recommendations[0].keys()}")
+        
         return {
-            "recommendations": recommendations,
+            "recommendations": combined_recommendations,  # Frontend expects this key
             "user_id": current_user['uid'],
             "interests": current_user['interests'],
             "nationality": current_user['nationality']
         }
     except Exception as e:
+        import traceback
+        print(f"[ERROR] {str(e)}")
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.on_event("shutdown")
