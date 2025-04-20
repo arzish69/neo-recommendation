@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: neo-recommendation
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: ./start.sh
+    plan: free
+    envVars:
+      - key: FIREBASE_CREDENTIALS
+        value: 
