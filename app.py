@@ -4,6 +4,10 @@ from firebase_admin import initialize_app, credentials, firestore, auth, _apps
 from typing import List, Optional
 from recommender import TopicBasedRecommender
 from feed_manager import FeedManager
+import os
+import base64
+import json
+from firebase_admin import credentials, initialize_app, _apps
 
 app = FastAPI()
 
@@ -23,7 +27,15 @@ app.add_middleware(
 )
 
 if not _apps:
-    cred = credentials.Certificate("service_acc.json")
+    # Get base64 string from env
+    encoded = os.environ['FIREBASE_CREDENTIALS']
+    
+    # Decode it to JSON
+    decoded = base64.b64decode(encoded).decode('utf-8')
+    service_account_info = json.loads(decoded)
+
+    # Initialize Firebase
+    cred = credentials.Certificate(service_account_info)
     initialize_app(cred)
 
 db = firestore.client()
